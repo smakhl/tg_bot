@@ -46,7 +46,8 @@ export const leaderboardCommand: MessageCallback = async (msg, match) => {
         let lastmodified = 0
         const scores = challenge.participants.map((participant, i) => {
             const initialStat = participant.stats.global_stats[squadType]
-            const freshStat = freshStats[i].global_stats[squadType]
+            const freshStat = freshStats[i]?.global_stats[squadType]
+            if (!freshStat) throw new Error('Failed to get fresh player stats')
             const initialDeaths =
                 initialStat.matchesplayed - initialStat.placetop1
             const freshDeaths = freshStat.matchesplayed - freshStat.placetop1
