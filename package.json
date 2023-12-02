@@ -1,0 +1,27 @@
+{
+    "name": "tg_bot",
+    "module": "src/index.ts",
+    "type": "module",
+    "version": "1.0.0",
+    "description": "",
+    "scripts": {
+        "start": "npm run build && node --env-file=.env dist/index.js",
+        "build": "rm -rf dist && npm run tsc",
+        "tsc": "tsc"
+    },
+    "keywords": [],
+    "author": "smakhl",
+    "license": "ISC",
+    "dependencies": {
+        "@google-cloud/logging": "^11.0.0",
+        "axios": "^1.4.0",
+        "date-fns": "^2.30.0",
+        "mongodb": "5.7",
+        "node-telegram-bot-api": "^0.61.0"
+    },
+    "devDependencies": {
+        "@types/node-telegram-bot-api": "^0.61.6",
+        "typescript": "^5.1.6",
+        "zx": "^7.2.3"
+    }
+}
