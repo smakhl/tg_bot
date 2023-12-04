@@ -38,11 +38,13 @@ export const leaderboardCommand: MessageCallback = async (msg, match) => {
             )
             return
         }
+
         const freshStats = await Promise.all(
             challenge.participants.map(async (participant) => {
                 return (await getPlayerStats(participant.account_id)).data
             })
         )
+
         let lastmodified = 0
         const scores = challenge.participants.map((participant, i) => {
             const initialStat = participant.stats.global_stats[squadType]
@@ -64,11 +66,6 @@ export const leaderboardCommand: MessageCallback = async (msg, match) => {
             }
             return score
         })
-        const byKd = [...scores].sort((a, b) => b.kd - a.kd)
-        const byKills = [...scores].sort((a, b) => b.kills - a.kills)
-
-        const kdLeaders = assignPlaces(byKd, (item) => item.kd)
-        const killsLeaders = assignPlaces(byKills, (item) => item.kills)
 
         if (
             scores.every((player) => player.kills === 0) &&
@@ -81,17 +78,20 @@ export const leaderboardCommand: MessageCallback = async (msg, match) => {
             return
         }
 
+        const kdLeaders = assignPlaces(scores, (item) => item.kd)
+        const killsLeaders = assignPlaces(scores, (item) => item.kills)
+
         let killsLeaderboard = killsLeaders
             .map(
                 (player) =>
-                    `${player.place}. ${player.item.username} - ${player.item.kills}`
+                    `${player.place}. ${player.player.username} - ${player.player.kills}`
             )
             .join('\n')
         let kdLeaderboard = kdLeaders
             .map(
                 (player) =>
-                    `${player.place}. ${player.item.username} - ${round(
-                        player.item.kd
+                    `${player.place}. ${player.player.username} - ${round(
+                        player.player.kd
                     )}`
             )
             .join('\n')

@@ -1,22 +1,27 @@
-export function assignPlaces<T>(objects: T[], accessor: (obj: T) => number) {
-    const places: { item: T; place: number }[] = []
+type AccessorFunction<T> = (item: T) => number
 
-    for (let i = 0; i < objects.length; i++) {
-        const object = objects[i]!
-        let place = places.findIndex(
-            (placeObject) => accessor(placeObject.item) === accessor(object)
-        )
+export function assignPlaces<T>(
+    players: T[],
+    accessor: AccessorFunction<T>
+): { player: T; place: number }[] {
+    const playerPlaces = [...players]
+        .sort((a, b) => accessor(b) - accessor(a))
+        .map((player) => ({ player, place: 0 }))
 
-        if (place === -1) {
-            place = places.length
+    let prevPlace = 0
+    let prevScore: number | null = null
+
+    for (let i = 0; i < playerPlaces.length; i++) {
+        const playerPlace = playerPlaces[i]!
+        const score = accessor(playerPlace.player)
+
+        if (score !== prevScore) {
+            prevPlace++
+            prevScore = score
         }
 
-        places.push({ item: object, place })
+        playerPlace.place = prevPlace
     }
 
-    places.forEach((place) => {
-        place.place++
-    })
-
-    return places
+    return playerPlaces
 }
