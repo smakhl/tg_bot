@@ -5,7 +5,7 @@
     "version": "1.0.0",
     "description": "",
     "scripts": {
-        "start": "npm run build && node --env-file=.env dist/index.js",
+        "start": "npm run build && node --env-file=.env dist/src/index.js",
         "build": "rm -rf dist && npm run tsc",
         "tsc": "tsc"
     },
