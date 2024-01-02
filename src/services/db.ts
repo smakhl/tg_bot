@@ -17,17 +17,25 @@ const client = new MongoClient(uri, {
 
 export type Challenge = {
     chat_id: number
-    participants: Participant[]
+    players: Player[]
+    history: StatsSnapshot[]
 }
 
-export type Participant = {
+export type Player = {
     username: string
     platform: string
     account_id: string
-    stats: AccountStatsResponse
 }
 
-export async function createChallenge(challenge: Challenge) {
+export type StatsSnapshot = {
+    created_at: string
+    players_stats: Array<{
+        account_id: string
+        stat: AccountStatsResponse
+    }>
+}
+
+export async function upsertChallenge(challenge: Challenge) {
     try {
         await client.connect()
         const database = client.db('challengesDb')
@@ -39,6 +47,7 @@ export async function createChallenge(challenge: Challenge) {
         const result = await challenges.replaceOne(query, replacement, {
             upsert: true,
         })
+        return result.upsertedId
     } finally {
         await client.close()
     }

@@ -4,6 +4,8 @@ if (!process.env.FORTNITE_API_TOKEN) {
     throw new Error('Missing FORTNITE_API_TOKEN')
 }
 
+// axios.defaults.headers.common['Accept-Encoding'] = 'gzip'
+
 const FortniteApiInstance = axios.create({
     baseURL: 'https://fortniteapi.io',
     headers: { Authorization: process.env.FORTNITE_API_TOKEN },

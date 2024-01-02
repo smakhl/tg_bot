@@ -1,5 +1,5 @@
 import { SquadType, getPlayerStats } from '../services/fortniteApi.js'
-import { getChallenge } from '../services/db.js'
+import { StatsSnapshot, getChallenge, upsertChallenge } from '../services/db.js'
 import { MessageCallback, bot } from '../services/telegramBot.js'
 import { round } from '../utils/round.js'
 import { assignPlaces } from '../utils/assignPlaces.js'
@@ -39,31 +39,46 @@ export const leaderboardCommand: MessageCallback = async (msg, match) => {
             return
         }
 
-        const freshStats = await Promise.all(
-            challenge.participants.map(async (participant) => {
-                return (await getPlayerStats(participant.account_id)).data
-            })
-        )
+        const prevStats: StatsSnapshot = challenge.history.at(-1)!
+        const freshStats: StatsSnapshot = {
+            created_at: new Date().toISOString(),
+            players_stats: await Promise.all(
+                challenge.players.map(async (player) => {
+                    return {
+                        account_id: player.account_id,
+                        stat: (await getPlayerStats(player.account_id)).data,
+                    }
+                })
+            ),
+        }
 
         let lastmodified = 0
-        const scores = challenge.participants.map((participant, i) => {
-            const initialStat = participant.stats.global_stats[squadType]
-            const freshStat = freshStats[i]?.global_stats[squadType]
-            if (!freshStat) throw new Error('Failed to get fresh player stats')
-            const initialDeaths =
-                initialStat.matchesplayed - initialStat.placetop1
+        const scores = challenge.players.map((player, i) => {
+            const prevStat = prevStats.players_stats.find(
+                (ps) => ps.account_id === player.account_id
+            )?.stat.global_stats[squadType]
+            const freshStat = freshStats.players_stats.find(
+                (ps) => ps.account_id === player.account_id
+            )?.stat.global_stats[squadType]
+
+            if (!prevStat || !freshStat)
+                throw new Error('Failed to get fresh player stats')
+
+            const prevDeaths = prevStat.matchesplayed - prevStat.placetop1
             const freshDeaths = freshStat.matchesplayed - freshStat.placetop1
-            const kills = freshStat.kills - initialStat.kills
-            const deaths = freshDeaths - initialDeaths
+            const kills = freshStat.kills - prevStat.kills
+            const deaths = freshDeaths - prevDeaths
             const score = {
-                username: participant.username,
+                username: player.username,
                 kills,
                 deaths,
                 kd: (kills || 1) / (deaths || 1),
             }
+
             if (freshStat.lastmodified > lastmodified) {
                 lastmodified = freshStat.lastmodified
             }
+
             return score
         })
 
@@ -71,23 +86,25 @@ export const leaderboardCommand: MessageCallback = async (msg, match) => {
             scores.every((player) => player.kills === 0) &&
             scores.every((player) => player.deaths === 0)
         ) {
-            bot.sendMessage(
-                chatId,
+            updateProgressMsg(
                 'There are no changes in squad stats since I last checked'
             )
             return
         }
 
-        const kdLeaders = assignPlaces(scores, (item) => item.kd)
         const killsLeaders = assignPlaces(scores, (item) => item.kills)
+        const kdLeaders = assignPlaces(scores, (item) => item.kd)
 
         let killsLeaderboard = killsLeaders
+            .filter((player) => player.player.kills > 0)
             .map(
                 (player) =>
                     `${player.place}. ${player.player.username} - ${player.player.kills}`
             )
             .join('\n')
+
         let kdLeaderboard = kdLeaders
+            .filter((player) => player.player.kills > 0)
             .map(
                 (player) =>
                     `${player.place}. ${player.player.username} - ${round(
@@ -104,6 +121,11 @@ export const leaderboardCommand: MessageCallback = async (msg, match) => {
                   formatDistanceToNow(lastmodified * 1000, { addSuffix: true })
                 : '',
         ].join('\n\n')
+
+        await upsertChallenge({
+            ...challenge,
+            history: [...challenge.history, freshStats],
+        })
 
         updateProgressMsg(leaderboardMessage)
 

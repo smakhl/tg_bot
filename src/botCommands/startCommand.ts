@@ -1,5 +1,5 @@
 import { getPlayerStats, searchAccountId } from '../services/fortniteApi.js'
-import { Participant, createChallenge } from '../services/db.js'
+import { Player, StatsSnapshot, upsertChallenge } from '../services/db.js'
 import { bot, MessageCallback } from '../services/telegramBot.js'
 import { parseUser } from '../utils/parseUser.js'
 import { logError, logInfo } from '../services/logger.js'
@@ -65,18 +65,28 @@ export const startCommand: MessageCallback = async (msg, match) => {
             })
         )
 
-        const participants: Participant[] = stats.map((stat) => {
+        const players: Player[] = stats.map((stat) => {
             return {
                 account_id: stat.account_id,
                 username: stat.username,
                 platform: stat.platform,
-                stats: stat.data,
             }
         })
 
-        await createChallenge({
+        const history: StatsSnapshot[] = [
+            {
+                created_at: new Date().toISOString(),
+                players_stats: stats.map((d) => ({
+                    account_id: d.account_id,
+                    stat: d.data,
+                })),
+            },
+        ]
+
+        await upsertChallenge({
             chat_id: msg.chat.id,
-            participants,
+            players,
+            history,
         })
 
         updateProgressMsg(
