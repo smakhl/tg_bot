@@ -1,10 +1,13 @@
 import { SquadType, getPlayerStats } from '../services/fortniteApi.js'
 import { StatsSnapshot, getChallenge, upsertChallenge } from '../services/db.js'
 import { MessageCallback, bot } from '../services/telegramBot.js'
-import { round } from '../utils/round.js'
 import { assignPlaces } from '../utils/assignPlaces.js'
 import { logError, logInfo } from '../services/logger.js'
 import { formatDistanceToNow } from 'date-fns'
+import { Score, getScores } from '../features/leaderboard/getScores.js'
+import { getLeaderboardNarrative } from '../features/leaderboard/getLeaderboardNarrative.js'
+
+let rateLimiterTimestamp = 0
 
 export const leaderboardCommand: MessageCallback = async (msg, match) => {
     const chatId = msg.chat.id
@@ -39,6 +42,8 @@ export const leaderboardCommand: MessageCallback = async (msg, match) => {
             return
         }
 
+        const prevPrevStats: StatsSnapshot | undefined =
+            challenge.history.at(-2)
         const prevStats: StatsSnapshot = challenge.history.at(-1)!
         const freshStats: StatsSnapshot = {
             created_at: new Date().toISOString(),
@@ -52,70 +57,58 @@ export const leaderboardCommand: MessageCallback = async (msg, match) => {
             ),
         }
 
-        let lastmodified = 0
-        const scores = challenge.players.map((player, i) => {
-            const prevStat = prevStats.players_stats.find(
-                (ps) => ps.account_id === player.account_id
-            )?.stat.global_stats[squadType]
-            const freshStat = freshStats.players_stats.find(
-                (ps) => ps.account_id === player.account_id
-            )?.stat.global_stats[squadType]
-
-            if (!prevStat || !freshStat)
-                throw new Error('Failed to get fresh player stats')
-
-            const prevDeaths = prevStat.matchesplayed - prevStat.placetop1
-            const freshDeaths = freshStat.matchesplayed - freshStat.placetop1
-            const kills = freshStat.kills - prevStat.kills
-            const deaths = freshDeaths - prevDeaths
-            const score = {
-                username: player.username,
-                kills,
-                deaths,
-                kd: (kills || 1) / (deaths || 1),
-            }
-
-            if (freshStat.lastmodified > lastmodified) {
-                lastmodified = freshStat.lastmodified
-            }
-
-            return score
+        const { scores, lastmodified } = getScores({
+            prevStats,
+            freshStats,
+            squadType,
+            players: challenge.players,
         })
 
-        if (
-            scores.every((player) => player.kills === 0) &&
-            scores.every((player) => player.deaths === 0)
-        ) {
+        if (scores.every((player) => player.matchesplayed === 0)) {
             updateProgressMsg(
                 'There are no changes in squad stats since I last checked'
             )
             return
         }
 
-        const killsLeaders = assignPlaces(scores, (item) => item.kills)
-        const kdLeaders = assignPlaces(scores, (item) => item.kd)
+        let prevScores: Score[] | undefined
+        if (prevPrevStats) {
+            prevScores = getScores({
+                prevStats: prevPrevStats,
+                freshStats: prevStats,
+                squadType,
+                players: challenge.players,
+            }).scores
+        }
 
-        let killsLeaderboard = killsLeaders
-            .filter((player) => player.player.kills > 0)
-            .map(
-                (player) =>
-                    `${player.place}. ${player.player.username} - ${player.player.kills}`
-            )
-            .join('\n')
+        const placedScores = assignPlaces(
+            scores.filter((player) => player.matchesplayed > 0),
+            (item) => item.kills
+        )
 
-        let kdLeaderboard = kdLeaders
-            .filter((player) => player.player.kills > 0)
-            .map(
-                (player) =>
-                    `${player.place}. ${player.player.username} - ${round(
-                        player.player.kd
-                    )}`
-            )
+        let leaderboardForMessage = placedScores
+            .map(({ place, player }) => {
+                let r = `${place}. ${player.username} - ${player.kills}🔫 / ${player.matchesplayed}🎮`
+                if (prevScores) {
+                    let prevScore = prevScores.find(
+                        (ps) => ps.username === player.username
+                    )
+                    if (
+                        prevScore?.matchesplayed &&
+                        player.kills - prevScore.kills
+                    ) {
+                        r += ` / ${Math.abs(player.kills - prevScore.kills)}${
+                            player.kills - prevScore.kills > 0 ? '↗️' : '↘️'
+                        }`
+                    }
+                }
+
+                return r
+            })
             .join('\n')
 
         let leaderboardMessage = [
-            '📊 By kill count:\n' + killsLeaderboard,
-            '📊 By kill/death ratio:\n' + kdLeaderboard,
+            '📊 Kills:\n' + leaderboardForMessage,
             lastmodified
                 ? 'Last modified: ' +
                   formatDistanceToNow(lastmodified * 1000, { addSuffix: true })
@@ -128,6 +121,40 @@ export const leaderboardCommand: MessageCallback = async (msg, match) => {
         })
 
         updateProgressMsg(leaderboardMessage)
+
+        if (prevScores && Date.now() > rateLimiterTimestamp + 1000) {
+            const prevPlacedScores = assignPlaces(
+                prevScores,
+                (item) => item.kills
+            )
+            let leaderboardForPrompt = placedScores
+                .map(({ place, player }) => {
+                    let r = `${place} place. ${player.username} - ${player.kills} kills`
+                    if (prevScores) {
+                        let prevScore = prevPlacedScores.find(
+                            (ps) => ps.player.username === player.username
+                        )
+                        if (
+                            prevScore?.player.matchesplayed &&
+                            player.kills - prevScore.player.kills
+                        ) {
+                            r += ` (for comparison, in the game before that, they had ${prevScore?.place} place, ${prevScore?.player.kills} kills)`
+                        } else {
+                            r += ` (skipped last game)`
+                        }
+                    }
+
+                    return r
+                })
+                .join('\n')
+
+            rateLimiterTimestamp = Date.now()
+            const narrative = await getLeaderboardNarrative(
+                leaderboardForPrompt
+            )
+
+            await bot.sendMessage(chatId, narrative)
+        }
 
         logInfo({
             command: 'leaderboard',
