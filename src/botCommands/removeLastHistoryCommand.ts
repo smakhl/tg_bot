@@ -7,17 +7,15 @@ export const removeLastHistoryCommand: MessageCallback = async (msg, match) => {
     const text = match?.[1]?.trim()
 
     const progressMsg = await bot.sendMessage(chatId, `🤖 Working on it`)
-    const updateProgressMsg = (msg: string) => {
-        bot.deleteMessage(chatId, progressMsg.message_id)
-        bot.sendMessage(chatId, msg, {
-            parse_mode: 'MarkdownV2',
-        })
+    const updateProgressMsg = async (msg: string) => {
+        await bot.deleteMessage(chatId, progressMsg.message_id)
+        await bot.sendMessage(chatId, msg)
     }
 
     try {
         const challenge = await getChallenge(chatId)
         if (!challenge) {
-            updateProgressMsg(
+            await updateProgressMsg(
                 "There's no leaderboard yet. You can create one with the /start command"
             )
             return
@@ -26,11 +24,11 @@ export const removeLastHistoryCommand: MessageCallback = async (msg, match) => {
         let removedItem = challenge.history.pop()
         if (removedItem) {
             await upsertChallenge(challenge)
-            updateProgressMsg(
+            await updateProgressMsg(
                 `The entry from ${removedItem.created_at} was removed`
             )
         } else {
-            updateProgressMsg(`Nothing to remove`)
+            await updateProgressMsg(`Nothing to remove`)
         }
 
         logInfo({

@@ -27,9 +27,9 @@ export const leaderboardCommand: MessageCallback = async (msg, match) => {
     }
 
     const progressMsg = await bot.sendMessage(chatId, `🤖 Working on it`)
-    const updateProgressMsg = (msg: string) => {
-        bot.deleteMessage(chatId, progressMsg.message_id)
-        bot.sendMessage(chatId, msg, {
+    const updateProgressMsg = async (msg: string) => {
+        await bot.deleteMessage(chatId, progressMsg.message_id)
+        await bot.sendMessage(chatId, msg, {
             parse_mode: 'MarkdownV2',
         })
     }
@@ -37,7 +37,7 @@ export const leaderboardCommand: MessageCallback = async (msg, match) => {
     try {
         const challenge = await getChallenge(chatId)
         if (!challenge) {
-            updateProgressMsg(
+            await updateProgressMsg(
                 "There's no leaderboard yet. You can create one with the /start command"
             )
             return
@@ -66,7 +66,7 @@ export const leaderboardCommand: MessageCallback = async (msg, match) => {
         })
 
         if (scores.every((player) => player.matchesplayed === 0)) {
-            updateProgressMsg(
+            await updateProgressMsg(
                 'There are no changes in squad stats since I last checked'
             )
             return
@@ -122,7 +122,7 @@ export const leaderboardCommand: MessageCallback = async (msg, match) => {
             history: [...challenge.history, freshStats],
         })
 
-        updateProgressMsg(leaderboardMessage)
+        await updateProgressMsg(leaderboardMessage)
 
         if (prevScores && Date.now() > rateLimiterTimestamp + 1000) {
             const prevPlacedScores = assignPlaces(
