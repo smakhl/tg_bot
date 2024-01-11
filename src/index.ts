@@ -4,6 +4,7 @@ import { leaderboardCommand } from './botCommands/leaderboardCommand.js'
 import { checkCommand } from './botCommands/checkCommand.js'
 import { logInfo } from './services/logger.js'
 import { helpCommand } from './botCommands/helpCommand.js'
+import { removeLastHistoryCommand } from './botCommands/removeLastHistoryCommand.js'
 
 bot.setMyCommands([
     {
@@ -18,6 +19,8 @@ bot.setMyCommands([
 bot.onText(/\/start(\s.+)?/, startCommand)
 
 bot.onText(/\/leaderboard(\s.+)?/, leaderboardCommand)
+
+bot.onText(/\/removeLastHistory(\s.+)?/, removeLastHistoryCommand)
 
 bot.onText(/\/check(\s.+)?/, checkCommand)
 
