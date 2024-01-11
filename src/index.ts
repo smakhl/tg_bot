@@ -12,7 +12,7 @@ bot.setMyCommands([
         description: 'register new leaderboard. See help for example',
     },
     { command: 'leaderboard', description: 'get leaderboard' },
-    { command: 'removeLast', description: 'remove last leaderboard' },
+    { command: 'removelast', description: 'remove last leaderboard' },
     { command: 'check', description: 'check username' },
     { command: 'help', description: 'see help' },
 ])
@@ -21,7 +21,7 @@ bot.onText(/\/start(\s.+)?/, startCommand)
 
 bot.onText(/\/leaderboard(\s.+)?/, leaderboardCommand)
 
-bot.onText(/\/removeLast(\s.+)?/, removeLastCommand)
+bot.onText(/\/removelast(\s.+)?/, removeLastCommand)
 
 bot.onText(/\/check(\s.+)?/, checkCommand)
 
