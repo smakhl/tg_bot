@@ -88,18 +88,24 @@ export const leaderboardCommand: MessageCallback = async (msg, match) => {
 
         let leaderboardForMessage = placedScores
             .map(({ place, player }) => {
-                let r = `${place}. ${player.username} - ${player.kills}🔫 / ${player.matchesplayed}🎮`
+                let r = `${place}. ${player.username}: ${player.kills}🔫 / ${player.matchesplayed}🎮`
                 if (prevScores) {
                     let prevScore = prevScores.find(
                         (ps) => ps.username === player.username
                     )
                     if (
-                        prevScore?.matchesplayed &&
-                        player.kills - prevScore.kills
+                        prevScore &&
+                        player.matchesplayed > prevScore.matchesplayed
                     ) {
-                        r += ` / ${Math.abs(player.kills - prevScore.kills)}${
-                            player.kills - prevScore.kills > 0 ? '↗️' : '↘️'
-                        }`
+                        if (Math.abs(player.kills - prevScore.kills) > 0) {
+                            r += ` / ${Math.abs(
+                                player.kills - prevScore.kills
+                            )}${
+                                player.kills - prevScore.kills > 0 ? '↗️' : '↘️'
+                            }`
+                        } else {
+                            r += ' / ➡️'
+                        }
                     }
                 }
 
@@ -135,10 +141,11 @@ export const leaderboardCommand: MessageCallback = async (msg, match) => {
                             (ps) => ps.player.username === player.username
                         )
                         if (
-                            prevScore?.player.matchesplayed &&
-                            player.kills - prevScore.player.kills
+                            prevScore &&
+                            player.matchesplayed >
+                                prevScore.player.matchesplayed
                         ) {
-                            r += ` (for comparison, in the game before that, they had ${prevScore?.place} place, ${prevScore?.player.kills} kills)`
+                            r += ` (for comparison, in the game before that, they had ${prevScore.place} place, ${prevScore.player.kills} kills)`
                         } else {
                             r += ` (skipped last game)`
                         }
@@ -149,6 +156,7 @@ export const leaderboardCommand: MessageCallback = async (msg, match) => {
                 .join('\n')
 
             rateLimiterTimestamp = Date.now()
+
             const narrative = await getLeaderboardNarrative(
                 leaderboardForPrompt
             )
