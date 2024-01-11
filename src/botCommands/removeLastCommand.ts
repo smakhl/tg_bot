@@ -2,7 +2,7 @@ import { getChallenge, upsertChallenge } from '../services/db.js'
 import { MessageCallback, bot } from '../services/telegramBot.js'
 import { logError, logInfo } from '../services/logger.js'
 
-export const removeLastHistoryCommand: MessageCallback = async (msg, match) => {
+export const removeLastCommand: MessageCallback = async (msg, match) => {
     const chatId = msg.chat.id
     const text = match?.[1]?.trim()
 
@@ -22,7 +22,7 @@ export const removeLastHistoryCommand: MessageCallback = async (msg, match) => {
         }
 
         let removedItem = challenge.history.pop()
-        if (removedItem) {
+        if (removedItem && challenge.history.length > 0) {
             await upsertChallenge(challenge)
             await updateProgressMsg(
                 `The entry from ${removedItem.created_at} was removed`
@@ -32,13 +32,13 @@ export const removeLastHistoryCommand: MessageCallback = async (msg, match) => {
         }
 
         logInfo({
-            command: 'removeLastHistoryCommand',
+            command: 'removeLastCommand',
             chatId,
             text,
         })
     } catch (error) {
         logError({
-            command: 'removeLastHistoryCommand',
+            command: 'removeLastCommand',
             chatId,
             error,
             text,
