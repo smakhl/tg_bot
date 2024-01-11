@@ -7,7 +7,7 @@ if (!process.env.DB_SECRET) {
 
 const uri = `mongodb+srv://${process.env.DB_SECRET}@cluster0.ufb6w5x.mongodb.net/?retryWrites=true&w=majority`
 
-const client = new MongoClient(uri, {
+export const client = new MongoClient(uri, {
     serverApi: {
         version: ServerApiVersion.v1,
         strict: true,

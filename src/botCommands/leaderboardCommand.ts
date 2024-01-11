@@ -6,6 +6,7 @@ import { logError, logInfo } from '../services/logger.js'
 import { formatDistanceToNow } from 'date-fns'
 import { Score, getScores } from '../features/leaderboard/getScores.js'
 import { getLeaderboardNarrative } from '../features/leaderboard/getLeaderboardNarrative.js'
+import { table, getBorderCharacters } from 'table'
 
 let rateLimiterTimestamp = 0
 
@@ -25,7 +26,9 @@ export const leaderboardCommand: MessageCallback = async (msg, match) => {
         }
     }
 
-    const progressMsg = await bot.sendMessage(chatId, `🤖 Working on it`)
+    const progressMsg = await bot.sendMessage(chatId, `🤖 Working on it`, {
+        parse_mode: 'MarkdownV2',
+    })
     const updateProgressMsg = (msg: string) => {
         bot.editMessageText(msg, {
             chat_id: chatId,
@@ -86,35 +89,30 @@ export const leaderboardCommand: MessageCallback = async (msg, match) => {
             (item) => item.kills
         )
 
-        let leaderboardForMessage = placedScores
-            .map(({ place, player }) => {
-                let r = `${place}. ${player.username}: ${player.kills}🔫 / ${player.matchesplayed}🎮`
-                if (prevScores) {
-                    let prevScore = prevScores.find(
-                        (ps) => ps.username === player.username
-                    )
-                    if (
-                        prevScore &&
-                        player.matchesplayed > prevScore.matchesplayed
-                    ) {
-                        if (Math.abs(player.kills - prevScore.kills) > 0) {
-                            r += ` / ${Math.abs(
-                                player.kills - prevScore.kills
-                            )}${
-                                player.kills - prevScore.kills > 0 ? '↗️' : '↘️'
-                            }`
-                        } else {
-                            r += ' / ➡️'
-                        }
-                    }
-                }
-
-                return r
-            })
-            .join('\n')
+        let leaderboardForMessage = table(
+            [
+                ['', '', '🔫', '🎮'],
+                ...placedScores.map(({ place, player }) => [
+                    place,
+                    player.username,
+                    player.kills,
+                    player.matchesplayed,
+                ]),
+            ],
+            {
+                border: getBorderCharacters('void'),
+                singleLine: true,
+                columns: [
+                    { alignment: 'left', width: 3 },
+                    { alignment: 'left', width: 15 },
+                    { alignment: 'right', width: 3 },
+                    { alignment: 'right', width: 3 },
+                ],
+            }
+        )
 
         let leaderboardMessage = [
-            '📊 Kills:\n' + leaderboardForMessage,
+            '🏆 Leaderboard:\n' + '```' + leaderboardForMessage + '```',
             lastmodified
                 ? 'Last modified: ' +
                   formatDistanceToNow(lastmodified * 1000, { addSuffix: true })
