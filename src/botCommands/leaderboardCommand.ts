@@ -26,13 +26,11 @@ export const leaderboardCommand: MessageCallback = async (msg, match) => {
         }
     }
 
-    const progressMsg = await bot.sendMessage(chatId, `🤖 Working on it`, {
-        parse_mode: 'MarkdownV2',
-    })
+    const progressMsg = await bot.sendMessage(chatId, `🤖 Working on it`)
     const updateProgressMsg = (msg: string) => {
-        bot.editMessageText(msg, {
-            chat_id: chatId,
-            message_id: progressMsg.message_id,
+        bot.deleteMessage(chatId, progressMsg.message_id)
+        bot.sendMessage(chatId, msg, {
+            parse_mode: 'MarkdownV2',
         })
     }
 
