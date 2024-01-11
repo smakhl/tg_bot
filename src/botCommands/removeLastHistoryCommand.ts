@@ -23,10 +23,15 @@ export const removeLastHistoryCommand: MessageCallback = async (msg, match) => {
             return
         }
 
-        challenge.history.pop()
-        await upsertChallenge(challenge)
-
-        updateProgressMsg('Last entry was removed')
+        let removedItem = challenge.history.pop()
+        if (removedItem) {
+            await upsertChallenge(challenge)
+            updateProgressMsg(
+                `The entry from ${removedItem.created_at} was removed`
+            )
+        } else {
+            updateProgressMsg(`Nothing to remove`)
+        }
 
         logInfo({
             command: 'removeLastHistoryCommand',
