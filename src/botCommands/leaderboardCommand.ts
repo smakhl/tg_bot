@@ -136,11 +136,7 @@ export const leaderboardCommand: MessageCallback = async (msg, match) => {
                         let prevScore = prevPlacedScores.find(
                             (ps) => ps.player.username === player.username
                         )
-                        if (
-                            prevScore &&
-                            player.matchesplayed >
-                                prevScore.player.matchesplayed
-                        ) {
+                        if (prevScore && prevScore.player.matchesplayed > 0) {
                             r += ` (for comparison, in the game before that, they had ${prevScore.place} place, ${prevScore.player.kills} kills)`
                         } else {
                             r += ` (skipped last game)`
