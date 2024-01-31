@@ -19,6 +19,7 @@ export type Challenge = {
     chat_id: number
     players: Player[]
     history: StatsSnapshot[]
+    instruction_for_narrative?: string
 }
 
 export type Player = {
