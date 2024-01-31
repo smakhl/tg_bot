@@ -8,7 +8,8 @@
         "start": "npm run build && node --env-file=.env dist/src/index.js",
         "build": "rm -rf dist && npm run tsc",
         "tsc": "tsc",
-        "deploy": "node --env-file=.env scripts/deploy.mjs"
+        "deploy": "node --env-file=.env scripts/deploy.mjs",
+        "sandbox": "npx tsx --env-file=.env"
     },
     "keywords": [],
     "author": "smakhl",
@@ -24,6 +25,7 @@
     },
     "devDependencies": {
         "@types/node-telegram-bot-api": "^0.61.6",
+        "tsx": "^4.7.0",
         "typescript": "^5.1.6",
         "zx": "^7.2.3"
     }
