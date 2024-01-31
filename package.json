@@ -8,7 +8,8 @@
         "start": "npm run build && node --env-file=.env dist/src/index.js",
         "build": "rm -rf dist && npm run tsc",
         "tsc": "tsc",
-        "deploy": "node --env-file=.env scripts/deploy.mjs"
+        "deploy": "node --env-file=.env scripts/deploy.mjs",
+        "stop": "node --env-file=.env scripts/stop.mjs"
     },
     "keywords": [],
     "author": "smakhl",
