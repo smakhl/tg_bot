@@ -150,7 +150,8 @@ export const leaderboardCommand: MessageCallback = async (msg, match) => {
             rateLimiterTimestamp = Date.now()
 
             const narrative = await getLeaderboardNarrative(
-                leaderboardForPrompt
+                leaderboardForPrompt,
+                challenge.instruction_for_narrative
             )
 
             await bot.sendMessage(chatId, narrative)

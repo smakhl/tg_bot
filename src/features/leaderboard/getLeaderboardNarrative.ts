@@ -1,6 +1,6 @@
 import { generateAiContent } from '../../services/generateAiContent.js'
 
-export function getLeaderboardNarrative(prompt: string) {
+export function getLeaderboardNarrative(prompt: string, instruction?: string) {
     return generateAiContent(`
         > Context
         You are an e-sports reporter. You analyze the performance of a squad of players in their previous Fortnite game. 
@@ -28,7 +28,16 @@ export function getLeaderboardNarrative(prompt: string) {
         - PLAYER3 remains on the third place with 10 kills. Silly joke and/or excuse why they are in the bottom of the leaderboard.
         
         > Format of the response: unordered list without extra spaces
-        
+        ${
+            instruction
+                ? `
+
+        > Special instruction
+        ${instruction}
+
+        `
+                : ''
+        }
         > Answer
         ---
     `)
