@@ -48,7 +48,7 @@ export const registerSetInstructionCommands = () => {
 
             await upsertChallenge(challenge)
             await ctx.deleteMessage(progressMsg.message_id)
-            await ctx.reply(`OK, I'll remember that`)
+            await ctx.reply(`OK, I'll remember that`, Markup.removeKeyboard())
         }
 
         logInfo({

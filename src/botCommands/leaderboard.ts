@@ -69,6 +69,7 @@ export const registerLeaderboardCommands = () => {
             '🏆 Leaderboard:\n' + '```' + leaderboardForMessage + '```',
             { parse_mode: 'MarkdownV2' }
         )
+        await ctx.deleteMessage()
         await ctx.answerCbQuery()
 
         if (Date.now() > rateLimiterTimestamp + 1000) {
