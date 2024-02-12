@@ -1,9 +1,11 @@
 type AccessorFunction<T> = (item: T) => number
 
+export type WithPlace<T> = { player: T; place: number }
+
 export function assignPlaces<T>(
     players: T[],
     accessor: AccessorFunction<T>
-): { player: T; place: number }[] {
+): WithPlace<T>[] {
     const playerPlaces = [...players]
         .sort((a, b) => accessor(b) - accessor(a))
         .map((player) => ({ player, place: 0 }))

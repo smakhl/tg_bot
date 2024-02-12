@@ -1,42 +1,42 @@
-import { bot } from './services/telegramBot.js'
-import { startCommand } from './botCommands/startCommand.js'
-import { leaderboardCommand } from './botCommands/leaderboardCommand.js'
-import { checkCommand } from './botCommands/checkCommand.js'
 import { logInfo } from './services/logger.js'
-import { helpCommand } from './botCommands/helpCommand.js'
-import { removeLastCommand } from './botCommands/removeLastCommand.js'
-import { setInstructionCommand } from './botCommands/setInstructionCommand.js'
+import { registerLeaderboardCommands } from './botCommands/leaderboard.js'
+import { bot, registerErrorHandler } from './services/telegramBot.js'
+import { client as dbClient } from './services/db.js'
+import { registerRemoveLastCommand } from './botCommands/removeLast.js'
+import { registerSetInstructionCommands } from './botCommands/setInstruction.js'
 
-bot.setMyCommands([
-    {
-        command: 'start',
-        description: 'register new leaderboard. See help for example',
-    },
-    { command: 'leaderboard', description: 'get leaderboard' },
-    { command: 'removelast', description: 'remove last leaderboard' },
-    {
-        command: 'setinstruction',
-        description: 'set instruction for ai narrative',
-    },
-    // { command: 'check', description: 'check username' },
-    // { command: 'help', description: 'see help' },
-])
+// bot.use(Telegraf.log())
 
-bot.onText(/\/start(\s.+)?/, startCommand)
-
-bot.onText(/\/leaderboard(\s.+)?/, leaderboardCommand)
-
-bot.onText(/\/removelast(\s.+)?/, removeLastCommand)
-
-bot.onText(/\/setinstruction(\s.+)?/, setInstructionCommand)
-
-bot.onText(/\/check(\s.+)?/, checkCommand)
-
-bot.onText(/\/help(\s.+)?/, helpCommand)
-
-logInfo({ message: 'Bot started' })
-
-process.on('SIGINT', () => {
-    console.info('Interrupted')
+process.once('SIGINT', async () => {
+    bot.stop('SIGINT')
+    logInfo({ message: 'Bot stopped SIGINT' })
+    await dbClient.close()
     process.exit(0)
 })
+
+process.once('SIGTERM', async () => {
+    bot.stop('SIGTERM')
+    logInfo({ message: 'Bot stopped SIGTERM' })
+    await dbClient.close()
+    process.exit(0)
+})
+
+bot.telegram.setMyCommands(
+    [
+        { command: 'leaderboard', description: 'leaderboard' },
+        { command: 'removelast', description: 'removelast' },
+        { command: 'setinstruction', description: 'setinstruction' },
+    ],
+    { scope: { type: 'default' }, language_code: 'en' }
+)
+
+registerLeaderboardCommands()
+registerRemoveLastCommand()
+registerSetInstructionCommands()
+
+registerErrorHandler()
+
+await dbClient.connect()
+await bot.launch()
+
+logInfo({ message: 'Bot started' })

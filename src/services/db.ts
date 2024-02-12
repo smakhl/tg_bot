@@ -37,34 +37,24 @@ export type StatsSnapshot = {
 }
 
 export async function upsertChallenge(challenge: Challenge) {
-    try {
-        await client.connect()
-        const database = client.db('challengesDb')
-        const challenges = database.collection('challenges')
+    const database = client.db('challengesDb')
+    const challenges = database.collection('challenges')
 
-        const query = { chat_id: challenge.chat_id }
+    const query = { chat_id: challenge.chat_id }
 
-        const replacement = challenge
-        const result = await challenges.replaceOne(query, replacement, {
-            upsert: true,
-        })
-        return result.upsertedId
-    } finally {
-        await client.close()
-    }
+    const replacement = challenge
+    const result = await challenges.replaceOne(query, replacement, {
+        upsert: true,
+    })
+    return result.upsertedId
 }
 
 export async function getChallenge(chatId: number) {
-    try {
-        await client.connect()
-        const database = client.db('challengesDb')
-        const challenges = database.collection('challenges')
+    const database = client.db('challengesDb')
+    const challenges = database.collection('challenges')
 
-        const query = { chat_id: chatId }
+    const query = { chat_id: chatId }
 
-        const result = await challenges.findOne<Challenge>(query)
-        return result
-    } finally {
-        await client.close()
-    }
+    const result = await challenges.findOne<Challenge>(query)
+    return result
 }
