@@ -5,13 +5,13 @@ import { getUpdatedChallenge } from './getUpdatedChallenge.js'
 
 const squadType: SquadType = SquadType.squad
 
-export async function getLeaderboard(chatId: number) {
+export async function getLeaderboard(chatId: number, offset = 1) {
     const updatedChallenge = await getUpdatedChallenge(chatId)
     if (!updatedChallenge) return
 
-    const prevPrevStats = updatedChallenge.history.at(-3)
-    const prevStats = updatedChallenge.history.at(-2)!
-    const freshStats = updatedChallenge.history.at(-1)!
+    const prevPrevStats = updatedChallenge.history.at(-(offset + 2))
+    const prevStats = updatedChallenge.history.at(-(offset + 1))!
+    const freshStats = updatedChallenge.history.at(-offset)!
 
     const { scores, lastmodified } = getScores({
         prevStats,
