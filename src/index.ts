@@ -4,8 +4,30 @@ import { bot, registerErrorHandler } from './services/telegramBot.js'
 import { client as dbClient } from './services/db.js'
 import { registerRemoveLastCommand } from './botCommands/removeLast.js'
 import { registerSetInstructionCommands } from './botCommands/setInstruction.js'
+import { Telegraf } from 'telegraf'
 
 // bot.use(Telegraf.log())
+
+await dbClient.connect()
+
+bot.telegram.setMyCommands(
+    [
+        { command: 'leaderboard', description: 'leaderboard' },
+        { command: 'removelast', description: 'removelast' },
+        { command: 'setinstruction', description: 'setinstruction' },
+    ],
+    { scope: { type: 'default' }, language_code: 'en' }
+)
+
+registerErrorHandler()
+
+registerLeaderboardCommands()
+registerRemoveLastCommand()
+registerSetInstructionCommands()
+
+bot.launch()
+
+logInfo({ message: 'Bot started' })
 
 process.once('SIGINT', async () => {
     bot.stop('SIGINT')
@@ -20,23 +42,3 @@ process.once('SIGTERM', async () => {
     await dbClient.close()
     process.exit(0)
 })
-
-bot.telegram.setMyCommands(
-    [
-        { command: 'leaderboard', description: 'leaderboard' },
-        { command: 'removelast', description: 'removelast' },
-        { command: 'setinstruction', description: 'setinstruction' },
-    ],
-    { scope: { type: 'default' }, language_code: 'en' }
-)
-
-registerLeaderboardCommands()
-registerRemoveLastCommand()
-registerSetInstructionCommands()
-
-registerErrorHandler()
-
-await dbClient.connect()
-await bot.launch()
-
-logInfo({ message: 'Bot started' })
