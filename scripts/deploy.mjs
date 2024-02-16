@@ -14,7 +14,7 @@ await $`node ~/code/scripts/src/firewall.mjs update`
 await ssh(`
 cd ${APP_DIR} && \
 (docker stop ${APP_NAME} || true) && \
-git pull && \
+git pull --rebase && \
 docker build -t ${APP_NAME} . && \
 docker run --rm --detach \
     --name=${APP_NAME} \
