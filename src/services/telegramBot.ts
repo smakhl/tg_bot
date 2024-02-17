@@ -1,6 +1,7 @@
 import { Telegraf } from 'telegraf'
 import { logError, logInfo } from './logger.js'
 import { isReplyToSetInstruction } from '../botCommands/setInstruction.js'
+import { isReplyToRegister } from '../botCommands/register.js'
 
 if (!process.env.BOT_TOKEN) throw new Error('Missing BOT_TOKEN')
 
@@ -34,6 +35,9 @@ export function registerLogger() {
                 message: ctx.message.text,
                 ...(isReplyToSetInstruction(ctx.message)
                     ? { reply_to_setinstruction: true }
+                    : {}),
+                ...(isReplyToRegister(ctx.message)
+                    ? { reply_to_register: true }
                     : {}),
             })
         }

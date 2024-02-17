@@ -21,7 +21,7 @@ export const registerLeaderboardCommands = () => {
         if (!leaderboard) {
             await ctx.deleteMessage(progressMsg.message_id)
             await ctx.reply(
-                "There's no leaderboard yet. You can create one with the /start command"
+                "There's no leaderboard yet. You can create one with the /register command"
             )
             return
         }
