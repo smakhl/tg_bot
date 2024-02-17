@@ -4,9 +4,10 @@ import { getLeaderboardNarrative } from '../features/leaderboard/getLeaderboardN
 import { getLeaderboardPrompt } from '../features/leaderboard/getLeaderboardPrompt.js'
 import { printLeaderboardTable } from '../features/leaderboard/printLeaderboardTable.js'
 import { getLeaderboard } from '../features/leaderboard/getLeaderboard.js'
-import { logInfo } from '../services/logger.js'
 import { bot } from '../services/telegramBot.js'
 import { Markup } from 'telegraf'
+import { Score } from '../features/leaderboard/getScores.js'
+import { WithPlace } from '../utils/assignPlaces.js'
 
 let rateLimiterTimestamp = 0
 
@@ -47,8 +48,6 @@ export const registerLeaderboardCommands = () => {
                 Markup.button.callback('No, refresh', 'leaderboardRefresh'),
             ])
         )
-
-        logInfo({ chatId, command: 'leaderboard' })
     })
 
     bot.action('leaderboardYes', async (ctx) => {
@@ -61,10 +60,9 @@ export const registerLeaderboardCommands = () => {
 
         await upsertChallenge(leaderboard.updatedChallenge)
 
-        let onlyPositiveScores = leaderboard.scores.filter(
-            ({ player }) => player.matchesplayed > 0
+        const leaderboardForMessage = printLeaderboardTable(
+            filterSkippedPlayers(leaderboard.scores)
         )
-        let leaderboardForMessage = printLeaderboardTable(onlyPositiveScores)
         await ctx.reply(
             '🏆 Leaderboard:\n' + '```' + leaderboardForMessage + '```',
             { parse_mode: 'MarkdownV2' }
@@ -73,9 +71,11 @@ export const registerLeaderboardCommands = () => {
         await ctx.answerCbQuery()
 
         if (Date.now() > rateLimiterTimestamp + 1000) {
-            let leaderboardPrompt = getLeaderboardPrompt(
-                leaderboard.scores,
+            const leaderboardPrompt = getLeaderboardPrompt(
+                filterSkippedPlayers(leaderboard.scores),
                 leaderboard.prevScores
+                    ? filterSkippedPlayers(leaderboard.prevScores)
+                    : undefined
             )
 
             rateLimiterTimestamp = Date.now()
@@ -87,8 +87,6 @@ export const registerLeaderboardCommands = () => {
 
             await ctx.reply(narrative)
         }
-
-        logInfo({ chatId, command: 'leaderboardYes' })
     })
 
     bot.action('leaderboardRefresh', async (ctx) => {
@@ -111,7 +109,8 @@ export const registerLeaderboardCommands = () => {
             ])
         )
         await ctx.answerCbQuery()
-
-        logInfo({ chatId, command: 'leaderboardRefresh' })
     })
 }
+
+const filterSkippedPlayers = (scores: WithPlace<Score>[]) =>
+    scores.filter(({ player }) => player.matchesplayed > 0)

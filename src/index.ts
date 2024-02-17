@@ -1,6 +1,10 @@
 import { logInfo } from './services/logger.js'
 import { registerLeaderboardCommands } from './botCommands/leaderboard.js'
-import { bot, registerErrorHandler } from './services/telegramBot.js'
+import {
+    bot,
+    registerErrorHandler,
+    registerLogger,
+} from './services/telegramBot.js'
 import { client as dbClient } from './services/db.js'
 import { registerRemoveLastCommand } from './botCommands/removeLast.js'
 import { registerSetInstructionCommands } from './botCommands/setInstruction.js'
@@ -20,6 +24,7 @@ bot.telegram.setMyCommands(
 )
 
 registerErrorHandler()
+registerLogger()
 
 registerLeaderboardCommands()
 registerRemoveLastCommand()

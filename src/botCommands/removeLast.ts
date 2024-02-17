@@ -1,6 +1,5 @@
 import { getChallenge, upsertChallenge } from '../services/db.js'
 import { bot } from '../services/telegramBot.js'
-import { logInfo } from '../services/logger.js'
 
 export const registerRemoveLastCommand = () => {
     bot.command('removelast', async (ctx) => {
@@ -27,10 +26,5 @@ export const registerRemoveLastCommand = () => {
             await ctx.deleteMessage(progressMsg.message_id)
             await ctx.reply(`Nothing to remove`)
         }
-
-        logInfo({
-            command: 'removelast',
-            chatId,
-        })
     })
 }

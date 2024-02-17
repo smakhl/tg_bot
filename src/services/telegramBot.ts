@@ -1,5 +1,6 @@
 import { Telegraf } from 'telegraf'
-import { logError } from './logger.js'
+import { logError, logInfo } from './logger.js'
+import { isReplyToSetInstruction } from '../botCommands/setInstruction.js'
 
 if (!process.env.BOT_TOKEN) throw new Error('Missing BOT_TOKEN')
 
@@ -15,8 +16,30 @@ export function registerErrorHandler() {
         }
         logError({
             chatId: ctx.chat?.id,
-            text,
             error,
+            ...(text ? { text } : {}),
         })
+    })
+}
+
+export function registerLogger() {
+    bot.use(async (ctx, next) => {
+        await next()
+
+        const chatId = ctx.chat?.id
+
+        if (ctx.message && 'text' in ctx.message) {
+            logInfo({
+                chatId,
+                message: ctx.message.text,
+                ...(isReplyToSetInstruction(ctx.message)
+                    ? { reply_to_setinstruction: true }
+                    : {}),
+            })
+        }
+
+        if (ctx.callbackQuery && 'data' in ctx.callbackQuery) {
+            logInfo({ chatId, callback: ctx.callbackQuery.data })
+        }
     })
 }
