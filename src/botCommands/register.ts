@@ -18,7 +18,7 @@ export const registerRegisterCommand = () => {
             ...Markup.forceReply()
                 .selective()
                 .placeholder('username1 username2 username3'),
-            reply_to_message_id: ctx.message.message_id,
+            reply_parameters: { message_id: ctx.message.message_id },
         })
     })
 

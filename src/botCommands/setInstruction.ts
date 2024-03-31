@@ -14,7 +14,7 @@ export const registerSetInstructionCommands = () => {
     bot.command('setinstruction', async (ctx) => {
         ctx.reply(question, {
             ...Markup.forceReply().selective(),
-            reply_to_message_id: ctx.message.message_id,
+            reply_parameters: { message_id: ctx.message.message_id },
         })
     })
 
