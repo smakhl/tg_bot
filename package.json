@@ -9,8 +9,8 @@
         "dev": "npx tsx --env-file=.env src/index.ts",
         "build": "rm -rf dist && npm run tsc",
         "tsc": "tsc",
-        "deploy": "node --env-file=.env scripts/deploy.mjs",
-        "stop": "node --env-file=.env scripts/stop.mjs",
+        "deploy": "npx tsx --env-file=.env scripts/deploy.ts",
+        "ssh": "npx tsx --env-file=.env scripts/ssh.ts",
         "sandbox": "npx tsx --env-file=.env"
     },
     "keywords": [],
