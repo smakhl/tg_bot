@@ -1,33 +1,33 @@
 name: Node.js CI
 
 on:
-  push:
-    branches: [ "main" ]
+    push:
+        branches: ['main']
 
 jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
+    deploy:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
 
-    - name: Use Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20.x'
+            - name: Use Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: '20.x'
 
-    - name: Install dependencies
-      run: npm install
+            - name: Install dependencies
+              run: npm install
 
-    - id: 'auth'
-      uses: 'google-github-actions/auth@v2'
-      with:
-        credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
+            - id: 'auth'
+              uses: 'google-github-actions/auth@v2'
+              with:
+                  credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
 
-    - name: 'Set up Cloud SDK'
-      uses: 'google-github-actions/setup-gcloud@v2'
+            - name: 'Set up Cloud SDK'
+              uses: 'google-github-actions/setup-gcloud@v2'
 
-    - name: Set Google Cloud Project ID
-      run: gcloud config set project '${{ secrets.GCP_PROJECT_ID }}' && gcloud config set compute/zone us-central1-a
+            - name: Set Google Cloud Project ID
+              run: gcloud config set project '${{ secrets.GCP_PROJECT_ID }}' && gcloud config set compute/zone us-central1-a
 
-    - name: 'Use gcloud CLI'
-      run: 'gcloud info'
+            - name: 'Deploy'
+              run: 'SERVER_NAME=${{ secrets.SERVER_NAME }} npx tsx scripts/deploy.ts'
