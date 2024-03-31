@@ -1,7 +1,7 @@
 FROM node:20-alpine
 WORKDIR /app
 COPY package*.json ./
-RUN npm ci
+RUN npm ci --frozen-lockfile
 COPY . .
 ENV NODE_ENV=production
 RUN npm run build

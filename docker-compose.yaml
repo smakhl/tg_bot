@@ -1,0 +1,8 @@
+services:
+    main:
+        build: .
+        env_file: .env
+        image: tg_bot
+        container_name: tg_bot
+        volumes:
+            - ./service_account.json:/app/service_account.json
