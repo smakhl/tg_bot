@@ -1,5 +1,5 @@
 import { StatsSnapshot, Player } from '../../services/db.js'
-import { SquadType } from '../../services/fortniteApi.js'
+import { SquadType } from '../../services/fortniteApi/schema.js'
 
 export type Score = {
     username: string

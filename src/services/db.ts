@@ -1,5 +1,5 @@
 import { MongoClient, ServerApiVersion } from 'mongodb'
-import { AccountStatsResponse } from './fortniteApi.js'
+import { AccountStatsResponse } from './fortniteApi/schema.js'
 
 if (!process.env.DB_SECRET) {
     throw new Error('Missing DB_SECRET')

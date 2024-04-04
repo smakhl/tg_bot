@@ -1,4 +1,4 @@
-import { getPlayerStats } from '../../services/fortniteApi.js'
+import { getPlayerStats } from '../../services/fortniteApi/index.js'
 import { Challenge, StatsSnapshot, getChallenge } from '../../services/db.js'
 
 export async function getUpdatedChallenge(chatId: number) {
@@ -11,7 +11,7 @@ export async function getUpdatedChallenge(chatId: number) {
             challenge.players.map(async (player) => {
                 return {
                     account_id: player.account_id,
-                    stat: (await getPlayerStats(player.account_id)).data,
+                    stat: await getPlayerStats(player.account_id),
                 }
             })
         ),

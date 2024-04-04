@@ -1,4 +1,4 @@
-import { AccountPlatform } from '../services/fortniteApi.js'
+import { AccountPlatform } from '../services/fortniteApi/schema.js'
 
 export function parseUser(text: string) {
     let platform: AccountPlatform = AccountPlatform.epic

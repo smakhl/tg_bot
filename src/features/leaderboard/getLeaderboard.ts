@@ -1,4 +1,4 @@
-import { SquadType } from '../../services/fortniteApi.js'
+import { SquadType } from '../../services/fortniteApi/schema.js'
 import { assignPlaces } from '../../utils/assignPlaces.js'
 import { getScores } from './getScores.js'
 import { getUpdatedChallenge } from './getUpdatedChallenge.js'

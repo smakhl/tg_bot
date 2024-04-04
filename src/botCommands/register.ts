@@ -2,7 +2,10 @@ import { Markup } from 'telegraf'
 import { message } from 'telegraf/filters'
 import { Message } from 'telegraf/types'
 import { Player, StatsSnapshot, upsertChallenge } from '../services/db.js'
-import { getPlayerStats, searchAccountId } from '../services/fortniteApi.js'
+import {
+    getPlayerStats,
+    searchAccountId,
+} from '../services/fortniteApi/index.js'
 import { bot } from '../services/telegramBot.js'
 import { getRepliedMessageText } from '../utils/getRepliedMessageText.js'
 import { parseUser } from '../utils/parseUser.js'
@@ -42,7 +45,7 @@ export const registerRegisterCommand = () => {
             usernames.map(async (user) => {
                 const { username, platform } = parseUser(user)
                 return {
-                    data: (await searchAccountId(username, platform)).data,
+                    data: await searchAccountId(username, platform),
                     username,
                     platform,
                 }
@@ -71,7 +74,7 @@ export const registerRegisterCommand = () => {
                     account_id,
                     username,
                     platform,
-                    data: (await getPlayerStats(account_id)).data,
+                    data: await getPlayerStats(account_id),
                 }
             })
         )
